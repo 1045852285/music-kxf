@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "babel-runtime": "^6.26.0",
+    "better-scroll": "^1.15.2",
     "core-js": "^3.6.4",
     "fastclick": "^1.0.6",
     "jsonp": "^0.2.1",
@@ -39,17 +40,12 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
-      "@vue/airbnb"
+      "plugin:vue/essential"
     ],
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {
-      "eqeqeq": "off",
-      "curly": "error",
-      "quotes": ["error", "double"]
-    }
+    "rules": {}
   },
   "browserslist": [
     "> 1%",
