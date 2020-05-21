@@ -4,7 +4,7 @@
       <slot></slot>
     </div>
     <div class="dots">
-      <span class="dota" v-for="(item,i) in dots" :key="i" :class="{active:currenPagIndex===i}"></span>
+      <span class="dota" v-for="(item,i) in dots" :key="i" :class="{active:currentPageIndex===i}"></span>
     </div>
   </div>
 </template>
@@ -16,18 +16,21 @@ export default {
   data() {
     return {
       dots: [],
-      currenPagIndex: 0
+      currentPageIndex: 0
     };
   },
   props: {
+    // 循环轮播
     loop: {
       type: Boolean,
       default: true
     },
+    // 自动轮播
     autoPlay: {
       type: Boolean,
       default: true
     },
+    // 轮播间隔
     interval: {
       type: Number,
       default: 4000
@@ -42,14 +45,20 @@ export default {
       if (this.autoPlay) {
         this._play();
       }
+    // 浏览器默认是17毫秒刷新一次，所以这个20毫秒的延迟是合理的
     }, 20);
 
-    window.addEventListener("resize", ()=> {
+    // 当页面发生窗口大小变化时触发
+    window.addEventListener("resize", () => {
+        // better-scroll或者better-scroll还没有启动时，return出去
       if (!this.slider || !this.slider.enabled) {
         return;
       }
+    // 先清除定时器
       clearTimeout(this.resizeTimer);
+    // 设置定时器，60毫秒执行一次
       this.resizeTimer = setTimeout(() => {
+        // isInTransition 判断当前 scroll 是否处于滚动动画过程中。
         if (this.slider.isInTransition) {
           this._onScrollEnd();
         } else {
@@ -57,31 +66,45 @@ export default {
             this._play();
           }
         }
+        // 调用refresh函数
         this.refresh();
       }, 60);
     });
   },
+  // 在vue对象存活的情况下，进入当前存在activated()函数的页面时，一进入页面就触发；可用于初始化页面数据等
   activated() {
+    // 当组件激活时，启动better-scroll
     this.slider.enable();
+    // 获取横轴方向偏移的页面数
     let pageIndex = this.slider.getCurrentPage().pageX;
+    // 当我们做 slide 组件的时候，slide 通常会分成多个页面。调用此（goToPage）方法可以滚动到指定的页面
     this.slider.goToPage(pageIndex, 0, 0);
+    // 把获取的页面数赋值给currentPageIndex
     this.currentPageIndex = pageIndex;
     if (this.autoPlay) {
       this._play();
     }
   },
+  // 退出时触发deactivated
   deactivated() {
+    // 禁用 better-scroll，DOM 事件（如 touchstart、touchmove、touchend）的回调函数不再响应
     this.slider.disable();
+    // 清除定时器
     clearTimeout(this.timer);
   },
+//   组件销毁时调用
   beforeDestroy() {
+    // 禁用 better-scroll，DOM 事件（如 touchstart、touchmove、touchend）的回调函数不再响应
     this.slider.disable();
+    // 清除定时器
     clearTimeout(this.timer);
   },
   methods: {
     refresh() {
       if (this.slider) {
         this._setSliderWidth(true);
+        // 触发时机：refresh 方法调用完成后
+        // 重新计算 better-scroll，当 DOM 结构发生变化的时候务必要调用确保滚动的效果正常
         this.slider.refresh();
       }
     },
@@ -122,14 +145,15 @@ export default {
           speed: 400
         }
       });
+    // 监听better-scroll滚动事件
       this.slider.on("scrollEnd", this._onScrollEnd);
-
+    // touchend事件：当手指从屏幕上离开的时候触发。
       this.slider.on("touchend", () => {
         if (this.autoPlay) {
           this._play();
         }
       });
-
+    // 监听beforeScrollStart 触发时机：滚动开始之前
       this.slider.on("beforeScrollStart", () => {
         if (this.autoPlay) {
           clearTimeout(this.timer);
@@ -138,7 +162,7 @@ export default {
     },
     _onScrollEnd() {
       let pageIndex = this.slider.getCurrentPage().pageX;
-      this.currenPagIndex = pageIndex;
+      this.currentPageIndex = pageIndex;
 
       if (this.autoPlay) {
         this._play();
