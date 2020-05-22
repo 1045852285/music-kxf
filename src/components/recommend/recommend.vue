@@ -7,7 +7,7 @@
             <slider>
               <div v-for="(item,i) in recommends" :key="i">
                 <a :href="item.linkUrl">
-                  <img @load="loadImage" :src="item.picUrl" />
+                  <img class="needsclick" @load="loadImage" :src="item.picUrl" />
                 </a>
               </div>
             </slider>
@@ -18,7 +18,7 @@
           <ul>
             <li class="item" v-for="(item,i) in discList" :key="i">
               <div class="icon">
-                <img width="60" height="60" :src="item.imgurl" />
+                <img width="60" height="60" v-lazy="item.imgurl" />
               </div>
               <div class="text">
                 <h2 class="name" v-html="item.creator.name"></h2>
@@ -27,6 +27,9 @@
             </li>
           </ul>
         </div>
+      </div>
+      <div class="loading-container" v-show="!discList.length">
+        <load-ing></load-ing>
       </div>
     </scroll>
   </div>
@@ -37,6 +40,7 @@ import { getRecommend, getDiscList } from "../../api/recommend";
 import { ERR_OK } from "../../api/config";
 import Slider from "../../base/slider/slider";
 import Scroll from "../../base/scroll/scroll"
+import loadIng from "../../base/loading/loading"
 
 export default {
   data() {
@@ -47,7 +51,8 @@ export default {
   },
   components: {
     Slider,
-    Scroll
+    Scroll,
+    loadIng
   },
   created() {
     this._getRecommend();
@@ -64,8 +69,6 @@ export default {
     _getDiscList() {
       getDiscList().then(res => {
         if (res.code === ERR_OK) {
-          // this.recommends = res.data.slider;
-          console.log(res.data.list);
           this.discList = res.data.list;
         }
       });
