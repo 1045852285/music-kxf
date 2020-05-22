@@ -50,7 +50,7 @@ export default {
 
     // 当页面发生窗口大小变化时触发
     window.addEventListener("resize", () => {
-        // better-scroll或者better-scroll还没有启动时，return出去
+        // better-scroll还没初始化完成或者better-scroll还没有启动时，return出去
       if (!this.slider || !this.slider.enabled) {
         return;
       }
@@ -116,7 +116,7 @@ export default {
       for (let i = 0; i < this.children.length; i++) {
         let child = this.children[i];
         addClass(child, "slider-item");
-
+        
         child.style.width = sliderWidth + "px";
         width += sliderWidth;
         // console.log(child);
@@ -172,7 +172,7 @@ export default {
       // let pageIndex = this.currenPagIndex + 1;
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {
-        // this.slider.goToPage(pageIndex,0,400);
+        // next 滚动到下一个页面
         this.slider.next();
       }, this.interval);
     }
