@@ -60,6 +60,7 @@ export default {
       this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments);
     },
     scrollToElement() {
+      // scrollToElement滚动到指定的目标元素
       this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments);
     }
   },
