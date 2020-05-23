@@ -11,7 +11,7 @@
       <li v-for="(group,i) in data" :key="i" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li v-for="(item,j) in group.items" :key="j" class="list-group-item">
+          <li @click="selectItem(item)" v-for="(item,j) in group.items" :key="j" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar" />
             <span class="name">{{item.name}}</span>
           </li>
@@ -81,6 +81,10 @@ export default {
     Loading
   },
   methods: {
+    selectItem(item){
+      // console.log(item);
+      this.$emit('select', item);
+    },
     scroll(pos) {
       // 接收在scroll.vue里面传出来的值
       this.scrollY = pos.y;
@@ -204,6 +208,7 @@ export default {
     diff(newVal) {
       
       let fixedTop =(newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0;
+        
       if (this.fixedTop === fixedTop) {
         return
       }
