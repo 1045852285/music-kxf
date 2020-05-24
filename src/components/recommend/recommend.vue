@@ -60,6 +60,7 @@ export default {
   },
   methods: {
     _getRecommend() {
+      // 轮播图数据
       getRecommend().then(res => {
         if (res.code === ERR_OK) {
           this.recommends = res.data.slider;
@@ -67,6 +68,7 @@ export default {
       });
     },
     _getDiscList() {
+      // 列表数据
       getDiscList().then(res => {
         if (res.code === ERR_OK) {
           this.discList = res.data.list;
