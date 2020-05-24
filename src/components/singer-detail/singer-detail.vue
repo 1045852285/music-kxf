@@ -1,11 +1,67 @@
 <template>
   <transition appear name="slide">
-    <div class="singer-detail"></div>
+    <music-list :songs="songs" :title="title" :bgimage="bgImage"></music-list>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
-export default {};
+import { mapGetters } from "vuex";
+import { ERR_OK } from "api/config";
+import { getSingerDetail } from "api/singer";
+import { createSong } from "../../common/js/song";
+import musicList from "../music-list/music-list"
+
+export default {
+  data() {
+    return {
+      songs: []
+    };
+  },
+  created() {
+    console.log(this.singer);
+    this._getDetail();
+  },
+  components:{
+    musicList
+  },
+  methods: {
+    _getDetail() {
+      if (!this.singer.id) {
+        this.$router.push("/singer");
+        return;
+      }
+      getSingerDetail(this.singer.id).then(res => {
+        if (res.code === ERR_OK) {
+          // processSongsUrl(this._normalizeSongs(res.data.list)).then(songs => {
+          //   this.songs = songs;
+          // });
+          this.songs = this._normalizeSongs(res.data.list);
+          console.log(this.songs);
+        }
+      });
+    },
+    // 对在getSingerDetail拿到的数据进行处理
+    _normalizeSongs(list) {
+      let ret = [];
+      list.forEach(item => {
+        let { musicData } = item;
+        if (musicData.songid && musicData.albummid) {
+          ret.push(createSong(musicData));
+        }
+      });
+      return ret;
+    }
+  },
+  computed: {
+    title(){
+      return this.singer.name
+    },
+    bgImage(){
+      return this.singer.avatar
+    },
+    ...mapGetters(["singer"])
+  }
+};
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
@@ -17,15 +73,5 @@ export default {};
 
 .slide-enter, .slide-leave-to {
   transform: translate3d(100%, 0, 0);
-}
-
-.singer-detail {
-  position: fixed;
-  z-index: 100;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: $color-background;
 }
 </style>
