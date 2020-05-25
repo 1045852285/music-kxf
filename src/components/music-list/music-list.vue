@@ -24,7 +24,7 @@
       ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -36,8 +36,9 @@
 <script type="text/ecmascript-6">
 import Scroll from "../../base/scroll/scroll";
 import songList from "../../base/song-list/song-list";
-import {prefixStyle} from "../../common/js/dom"
-import loading from "../../base/loading/loading"
+import { prefixStyle } from "../../common/js/dom";
+import loading from "../../base/loading/loading";
+import { mapActions } from "vuex";
 
 const RESERVED_HEIGHT = 40;
 const transform = prefixStyle("transform");
@@ -68,7 +69,6 @@ export default {
   created() {
     this.probeType = 3;
     this.listenScroll = true;
-    
   },
   mounted() {
     // this.$refs.list是一个VueComponent对象，所以要$el.style.top
@@ -84,9 +84,21 @@ export default {
       // 拿到scrollY的值，设置bg-layer的偏移量
       this.scrollY = pos.y;
     },
-    iconBack(){
+    // 路由，点击退回上一页
+    iconBack() {
       this.$router.back();
-    }
+    },
+    // song-list子组件传过来的值
+    // 子组件行为和本身相关，子组件并不关心父组件使用了你多少参数，子组件只负责把参数给你就行了
+    selectItem(item, i) {
+      this.selectPlay({
+        list:this.songs,
+        i
+      })
+    },
+    ...mapActions([
+      "selectPlay"
+    ])
   },
   components: {
     Scroll,
@@ -107,7 +119,7 @@ export default {
       // 所以此时bg-layer就会停在距顶部0的地方就不会动了
       // max返回两个数中最大的数
       let tranlateY = Math.max(this.minTranslateY, newY);
-     
+
       // 比例公式   abs绝对值
       const precent = Math.abs(newY / this.imageHeight);
       if (newY > 0) {
@@ -123,18 +135,18 @@ export default {
       this.$refs.layer.style[transform] = `translate3d(0,${tranlateY}px,0)`;
 
       // backdrop-filter高斯模糊的css属性
-      this.$refs.filter.style[backdrop] = `blur(${blur}px)`
-      
+      this.$refs.filter.style[backdrop] = `blur(${blur}px)`;
+
       // 负数越大反而越小
       if (newY < this.minTranslateY) {
         zIndex = 10;
         this.$refs.bgimage.style.paddingTop = 0;
         this.$refs.bgimage.style.height = `${RESERVED_HEIGHT}px`;
-        this.$refs.play.style.display = 'none';
+        this.$refs.play.style.display = "none";
       } else {
         this.$refs.bgimage.style.paddingTop = `70%`;
         this.$refs.bgimage.style.height = 0;
-        this.$refs.play.style.display = '';
+        this.$refs.play.style.display = "";
       }
       this.$refs.bgimage.style.zIndex = zIndex;
 
