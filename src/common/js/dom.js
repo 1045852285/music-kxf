@@ -25,7 +25,7 @@ export function getData(el, name, val) {
 }
 
 let elementStyle = document.createElement('div').style
-console.log(elementStyle);
+// console.log(elementStyle);
 
 let vendor = (() => {
     let transformNames = {

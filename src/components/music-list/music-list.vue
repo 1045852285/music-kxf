@@ -1,10 +1,16 @@
 <template>
   <div class="music-list">
     <div class="back">
-      <i class="icon-back"></i>
+      <i class="icon-back" @click="iconBack"></i>
     </div>
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgimage">
+      <div class="play-wrapper">
+        <div class="play" v-show="songs.length>0" ref="play">
+          <i class="icon-play"></i>
+          <span class="text">随机播放全部</span>
+        </div>
+      </div>
       <div class="filter" ref="filter"></div>
     </div>
     <div class="bg-layer" ref="layer"></div>
@@ -20,6 +26,9 @@
       <div class="song-list-wrapper">
         <song-list :songs="songs"></song-list>
       </div>
+      <div class="loading-container" v-show="!songs.length">
+        <loading></loading>
+      </div>
     </scroll>
   </div>
 </template>
@@ -28,6 +37,7 @@
 import Scroll from "../../base/scroll/scroll";
 import songList from "../../base/song-list/song-list";
 import {prefixStyle} from "../../common/js/dom"
+import loading from "../../base/loading/loading"
 
 const RESERVED_HEIGHT = 40;
 const transform = prefixStyle("transform");
@@ -58,6 +68,7 @@ export default {
   created() {
     this.probeType = 3;
     this.listenScroll = true;
+    
   },
   mounted() {
     // this.$refs.list是一个VueComponent对象，所以要$el.style.top
@@ -72,11 +83,15 @@ export default {
     scroll(pos) {
       // 拿到scrollY的值，设置bg-layer的偏移量
       this.scrollY = pos.y;
+    },
+    iconBack(){
+      this.$router.back();
     }
   },
   components: {
     Scroll,
-    songList
+    songList,
+    loading
   },
   computed: {
     bgStyle() {
@@ -115,9 +130,11 @@ export default {
         zIndex = 10;
         this.$refs.bgimage.style.paddingTop = 0;
         this.$refs.bgimage.style.height = `${RESERVED_HEIGHT}px`;
+        this.$refs.play.style.display = 'none';
       } else {
         this.$refs.bgimage.style.paddingTop = `70%`;
         this.$refs.bgimage.style.height = 0;
+        this.$refs.play.style.display = '';
       }
       this.$refs.bgimage.style.zIndex = zIndex;
 

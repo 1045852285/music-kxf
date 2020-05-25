@@ -10,6 +10,8 @@ import { ERR_OK } from "api/config";
 import { getSingerDetail } from "api/singer";
 import { createSong } from "../../common/js/song";
 import musicList from "../music-list/music-list"
+import { processSongsUrl } from '../../common/js/song'
+
 
 export default {
   data() {
@@ -18,7 +20,7 @@ export default {
     };
   },
   created() {
-    console.log(this.singer);
+    // console.log(this.singer);
     this._getDetail();
   },
   components:{
@@ -31,11 +33,12 @@ export default {
         return;
       }
       getSingerDetail(this.singer.id).then(res => {
+        
         if (res.code === ERR_OK) {
-          // processSongsUrl(this._normalizeSongs(res.data.list)).then(songs => {
-          //   this.songs = songs;
-          // });
-          this.songs = this._normalizeSongs(res.data.list);
+          processSongsUrl(this._normalizeSongs(res.data.list)).then((songs) => {
+            this.songs = songs;
+            console.log(this.songs)
+          });
           console.log(this.songs);
         }
       });
