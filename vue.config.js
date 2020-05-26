@@ -153,5 +153,5 @@ module.exports = {
       .set('api', resolve('src/api'))
       .set('base', resolve('src/base'))
   },
-  publicPath: ''
+  publicPath: '/'
 }

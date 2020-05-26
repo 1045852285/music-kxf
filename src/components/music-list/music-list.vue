@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgimage">
       <div class="play-wrapper">
-        <div class="play" v-show="songs.length>0" ref="play">
+        <div class="play" @click="random" v-show="songs.length>0" ref="play">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -92,13 +92,15 @@ export default {
     // 子组件行为和本身相关，子组件并不关心父组件使用了你多少参数，子组件只负责把参数给你就行了
     selectItem(item, i) {
       this.selectPlay({
-        list:this.songs,
+        list: this.songs,
         i
-      })
+      });
     },
-    ...mapActions([
-      "selectPlay"
-    ])
+    // 点击随机播放
+    random() {
+      this.randomPlay({ list: this.songs });
+    },
+    ...mapActions(["selectPlay", "randomPlay"])
   },
   components: {
     Scroll,
