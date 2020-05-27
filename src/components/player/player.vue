@@ -19,10 +19,10 @@
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
         <div class="middle">
-          <div class="middle-l">
+          <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd">
-                <img class="image" :class="cdCls" :src="currentSong.image" />
+              <div class="cd" ref="imageWrapper">
+                <img class="image" ref="cdCls" :class="cdCls" :src="currentSong.image" />
               </div>
             </div>
           </div>
@@ -97,6 +97,8 @@ import ProgressBar from "../../base/progress-bar/progress-bar";
 import ProgressCircle from "../../base/progress-circle/progress-circle";
 import { playMode } from "../../common/js/config";
 import { shuffle } from "../../common/js/util";
+// 歌词自动滚动插件
+import Lyric from "lyric-parser";
 
 const transform = prefixStyle["transform"];
 
@@ -105,7 +107,8 @@ export default {
     return {
       songReady: false,
       currentTime: 0,
-      redius: 32
+      redius: 32,
+      currentLyric: null
     };
   },
   components: {
@@ -128,12 +131,11 @@ export default {
       setCurrentIndex: "SET_CURRENT_INDEX",
       // 播放顺序（顺序，随机播放）
       setPlayMode: "SET_PLAY_MODE",
-      // 歌曲列表，是有序列表
+      // 歌曲列表，是无序列表
       setPlayList: "SET_PLAYLIST"
     }),
     // 动画开始
     enter(el, done) {
-     
       const { x, y, scale } = this._getPosAndScale();
 
       let animation = {
@@ -163,14 +165,12 @@ export default {
       animations.runAnimation(this.$refs.cdWrapper, "move", done);
     },
     afterEnter() {
-     
       // done函数执行以后，就会跳到afterEnter
       animations.unregisterAnimation("move");
       // 清空animation
       this.$refs.cdWrapper.style.animation = "";
     },
     leave(el, done) {
-    
       this.$refs.cdWrapper.style.transition = `all 0.4s`;
       // 获取目标位置
       const { x, y, scale } = this._getPosAndScale();
@@ -178,16 +178,15 @@ export default {
       this.$refs.cdWrapper.style[
         transform
       ] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
-      
-      const timer = setTimeout(done, 400)
+
+      const timer = setTimeout(done, 400);
       // 监听transitionend事件，当这个事件执行完之后就会调用done函数
-      this.$refs.cdWrapper.addEventListener('transitionend', () => {
-          clearTimeout(timer)
-          done()
-        })
+      this.$refs.cdWrapper.addEventListener("transitionend", () => {
+        clearTimeout(timer);
+        done();
+      });
     },
     afterLeave() {
-      console.log("afterLeave");
       // 清空transition和transform
       this.$refs.cdWrapper.style.transition = "";
       this.$refs.cdWrapper.style[transform] = "";
@@ -257,19 +256,20 @@ export default {
       if (!this.playing) {
         this.togglePlaying();
       }
+
       this.songReady = false;
     },
     // 歌曲播放完毕后触发
-    end(){
+    end() {
       // loop单曲循环
       if (this.mode === playMode.loop) {
         this.loop();
-      }else{
+      } else {
         this.next();
       }
     },
     // 实现循环播放
-    loop(){
+    loop() {
       this.$refs.audio.currentTime = 0;
       this.$refs.audio.play();
     },
@@ -319,34 +319,45 @@ export default {
       const mode = (this.mode + 1) % 3;
       this.setPlayMode(mode);
       let list = null;
-      console.log(this.currentSong.id);
-      
+
       if (mode === playMode.random) {
-        console.log(123);
-        
         list = shuffle(this.sequenceList);
       } else {
-        console.log(456);
-        
         list = this.sequenceList;
       }
-      this.resetCurrentIndex(list)
-      this.setPlayList(list)
+      this.resetCurrentIndex(list);
+      this.setPlayList(list);
     },
     // 数组被打乱之后，还能确保下标是正在播放的这首歌
-    resetCurrentIndex(list){
-      console.log(list);
-      console.log(this.playList)
+    resetCurrentIndex(list) {
       // 在打乱的数组里面找到正在播放的这首歌的下标，然后传入vuex里面
-      let index = list.findIndex((item)=>{
+      let index = list.findIndex(item => {
         return item.id === this.currentSong.id;
-      })
-      console.log(index);
-      console.log(this.currentSong);
-      console.log(this.currentIndex);
-      
+      });
       this.setCurrentIndex(index);
+    },
+    //
+    getLyric() {
+      this.currentSong.getLyric().then((Lyric) => {
+        // this.currentLyric = new Lyric(Lyric);
+        console.log(Lyric);
+      });
     }
+    /**
+     * 计算内层Image的transform，并同步到外层容器
+     * @param wrapper
+     * @param inner
+     */
+    // syncWrapperTransform (wrapper, inner) {
+    //     if (!this.$refs[wrapper]) {
+    //       return
+    //     }
+    //     let imageWrapper = this.$refs[wrapper]
+    //     let image = this.$refs[inner]
+    //     let wTransform = getComputedStyle(imageWrapper)[transform]
+    //     let iTransform = getComputedStyle(image)[transform]
+    //     imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
+    //   },
   },
   computed: {
     // 播放开始暂停大图标改变
@@ -389,14 +400,15 @@ export default {
   },
   watch: {
     // 当currentSong变化时调用
-    currentSong(newSong,oldSong) {
+    currentSong(newSong, oldSong) {
       // 如果不加这个判断，list数组一被打乱，根据下标重新计算currentSong
       // 这个监听就会被执行，导致了暂停状态的时候也会播放歌曲
       if (newSong.id === oldSong.id) {
-        return
+        return;
       }
       this.$nextTick(() => {
         this.$refs.audio.play();
+        this.getLyric();
       });
     },
     // 监听playing的状态
@@ -406,6 +418,14 @@ export default {
         // play开始    pause暂停
         newPlaying ? audio.play() : audio.pause();
       });
+
+      // if (!newPlaying) {
+      //     if (this.fullScreen) {
+      //       this.syncWrapperTransform('imageWrapper', 'image')
+      //     } else {
+      //       this.syncWrapperTransform('miniWrapper', 'miniImage')
+      //     }
+      //   }
     }
   }
 };

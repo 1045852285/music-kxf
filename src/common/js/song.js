@@ -1,5 +1,7 @@
 import { getLyric, getSongsUrl } from '../../api/song'
 import { ERR_OK } from '../../api/config'
+// 歌词解码
+import { Base64 } from 'js-base64'
 
 export default class Song {
     constructor({ id, mid, singer, name, album, duration, image, url }) {
