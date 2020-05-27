@@ -22,7 +22,7 @@
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" ref="imageWrapper">
-                <img class="image" ref="cdCls" :class="cdCls" :src="currentSong.image" />
+                <img ref="image" class="image" :class="cdCls" :src="currentSong.image" />
               </div>
             </div>
           </div>
@@ -58,8 +58,8 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <div class="imgWrapper">
-            <img :class="cdCls" width="40" height="40" :src="currentSong.image" />
+          <div class="imgWrapper" ref="miniWrapper">
+            <img ref="miniImage" :class="cdCls" width="40" height="40" :src="currentSong.image" />
           </div>
         </div>
         <div class="text">
@@ -100,7 +100,7 @@ import { shuffle } from "../../common/js/util";
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
 
-const transform = prefixStyle["transform"];
+const transform = prefixStyle("transform");
 
 export default {
   data() {
@@ -338,26 +338,31 @@ export default {
     },
     //
     getLyric() {
-      this.currentSong.getLyric().then((Lyric) => {
-        // this.currentLyric = new Lyric(Lyric);
-        console.log(Lyric);
+      this.currentSong.getLyric().then((lyric) => {
+        this.currentLyric = new Lyric(lyric);
+        console.log(this.currentLyric);
       });
-    }
+    },
     /**
      * 计算内层Image的transform，并同步到外层容器
      * @param wrapper
      * @param inner
      */
-    // syncWrapperTransform (wrapper, inner) {
-    //     if (!this.$refs[wrapper]) {
-    //       return
-    //     }
-    //     let imageWrapper = this.$refs[wrapper]
-    //     let image = this.$refs[inner]
-    //     let wTransform = getComputedStyle(imageWrapper)[transform]
-    //     let iTransform = getComputedStyle(image)[transform]
-    //     imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
-    //   },
+    syncWrapperTransform (wrapper, inner) {
+        if (!this.$refs[wrapper]) {
+          return
+        }
+        let imageWrapper = this.$refs[wrapper]
+        let image = this.$refs[inner]
+        // console.log(imageWrapper);
+        // console.log(image);
+        // console.log(transform);
+        let wTransform = getComputedStyle(imageWrapper)[transform]
+        let iTransform = getComputedStyle(image)[transform]
+        // console.log(wTransform);
+        
+        imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
+      },
   },
   computed: {
     // 播放开始暂停大图标改变
@@ -419,13 +424,13 @@ export default {
         newPlaying ? audio.play() : audio.pause();
       });
 
-      // if (!newPlaying) {
-      //     if (this.fullScreen) {
-      //       this.syncWrapperTransform('imageWrapper', 'image')
-      //     } else {
-      //       this.syncWrapperTransform('miniWrapper', 'miniImage')
-      //     }
-      //   }
+      if (!newPlaying) {
+          if (this.fullScreen) {
+            this.syncWrapperTransform('imageWrapper', 'image')
+          } else {
+            this.syncWrapperTransform('miniWrapper', 'miniImage')
+          }
+        }
     }
   }
 };
