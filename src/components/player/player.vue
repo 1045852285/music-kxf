@@ -26,6 +26,20 @@
               </div>
             </div>
           </div>
+          <!-- currentLyri默认为null  加&& 是为了当currentLyric不为空的时候把currentLyric.lines传进去 -->
+          <Scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p
+                  ref="lyricLine"
+                  class="text"
+                  v-for="(line, index) in currentLyric.lines"
+                  :key="index"
+                  :class="{'current':currentLineNum === index}"
+                >{{line.txt}}</p>
+              </div>
+            </div>
+          </Scroll>
         </div>
         <div class="bottom">
           <div class="progress-wrapper">
@@ -97,6 +111,7 @@ import ProgressBar from "../../base/progress-bar/progress-bar";
 import ProgressCircle from "../../base/progress-circle/progress-circle";
 import { playMode } from "../../common/js/config";
 import { shuffle } from "../../common/js/util";
+import Scroll from "../../base/scroll/scroll"
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
 
@@ -108,12 +123,15 @@ export default {
       songReady: false,
       currentTime: 0,
       redius: 32,
-      currentLyric: null
+      currentLyric: null,
+      // 当前这个歌词所在的行，初始化是0
+      currentLineNum:0
     };
   },
   components: {
     ProgressBar,
-    ProgressCircle
+    ProgressCircle,
+    Scroll
   },
   methods: {
     back() {
@@ -338,31 +356,49 @@ export default {
     },
     //
     getLyric() {
-      this.currentSong.getLyric().then((lyric) => {
-        this.currentLyric = new Lyric(lyric);
-        console.log(this.currentLyric);
+      this.currentSong.getLyric().then(lyric => {
+        // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
+        this.currentLyric = new Lyric(lyric, this.handleLyric);
+        // 当歌曲正在播放的时候我们歌曲也会播放
+        if (this.playing) {
+          this.currentLyric.play();
+        }
+        console.log(this.currentLyric.lines);
       });
+    },
+    // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
+    handleLyric({ lineNum, txt }) {
+      // lineNum 当前正在播放的歌词的行数
+      this.currentLineNum = lineNum;
+      if (lineNum>5) {
+        // 当前滚动如果大于5行的话，我们需要滚动lineNum-5的这个位置
+        let lineEl = this.$refs.lyricLine[lineNum-5]
+        // 调用scroll组里的方法
+        this.$refs.lyricList.scrollToElement(lineEl, 1000)
+      }else{
+        this.$refs.lyricList.scrollToElement(0, 0, 1000)
+      }
     },
     /**
      * 计算内层Image的transform，并同步到外层容器
      * @param wrapper
      * @param inner
      */
-    syncWrapperTransform (wrapper, inner) {
-        if (!this.$refs[wrapper]) {
-          return
-        }
-        let imageWrapper = this.$refs[wrapper]
-        let image = this.$refs[inner]
-        // console.log(imageWrapper);
-        // console.log(image);
-        // console.log(transform);
-        let wTransform = getComputedStyle(imageWrapper)[transform]
-        let iTransform = getComputedStyle(image)[transform]
-        // console.log(wTransform);
-        
-        imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
-      },
+    syncWrapperTransform(wrapper, inner) {
+      if (!this.$refs[wrapper]) {
+        return;
+      }
+      let imageWrapper = this.$refs[wrapper];
+      let image = this.$refs[inner];
+
+      // 保存image的位置，赋值给image外面的div来记录位置
+      let wTransform = getComputedStyle(imageWrapper)[transform];
+      let iTransform = getComputedStyle(image)[transform];
+      // console.log(iTransform);
+
+      imageWrapper.style[transform] =
+        wTransform === "none" ? iTransform : iTransform.concat(" ", wTransform);
+    }
   },
   computed: {
     // 播放开始暂停大图标改变
@@ -424,13 +460,15 @@ export default {
         newPlaying ? audio.play() : audio.pause();
       });
 
+      // 当暂停的时候记录图片转动的当前位置
       if (!newPlaying) {
-          if (this.fullScreen) {
-            this.syncWrapperTransform('imageWrapper', 'image')
-          } else {
-            this.syncWrapperTransform('miniWrapper', 'miniImage')
-          }
+        // fullScreen播放器展开和收起状态
+        if (this.fullScreen) {
+          this.syncWrapperTransform("imageWrapper", "image");
+        } else {
+          this.syncWrapperTransform("miniWrapper", "miniImage");
         }
+      }
     }
   }
 };
