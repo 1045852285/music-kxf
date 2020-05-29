@@ -39,12 +39,14 @@ import songList from "../../base/song-list/song-list";
 import { prefixStyle } from "../../common/js/dom";
 import loading from "../../base/loading/loading";
 import { mapActions } from "vuex";
+import { playListMixin } from "../../common/js/mixin";
 
 const RESERVED_HEIGHT = 40;
 const transform = prefixStyle("transform");
 const backdrop = prefixStyle("backdrop-filter");
 
 export default {
+  mixins: [playListMixin],
   props: {
     bgimage: {
       type: String,
@@ -99,6 +101,12 @@ export default {
     // 点击随机播放
     random() {
       this.randomPlay({ list: this.songs });
+    },
+    // mixin方法
+    handlePlayList(playList){
+      const bottom = playList.length > 0 ? "60px" : "";
+      this.$refs.list.$el.style.bottom = bottom;
+      this.$refs.list.refresh();
     },
     ...mapActions(["selectPlay", "randomPlay"])
   },

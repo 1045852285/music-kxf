@@ -89,6 +89,7 @@ export default {
       // 接收在scroll.vue里面传出来的值
       this.scrollY = pos.y;
     },
+    // 暴露给singer组件的方法，调用refresh
     refresh () {
         this.$refs.listview.refresh()
       },

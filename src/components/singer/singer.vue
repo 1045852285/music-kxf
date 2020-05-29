@@ -1,6 +1,6 @@
 <template>
-  <div class="singer">
-    <list-view @select="selectSinger" :data="singers"></list-view>
+  <div class="singer" ref="singer">
+    <list-view @select="selectSinger" ref="sing" :data="singers"></list-view>
     <router-view></router-view>
   </div>
 </template>
@@ -11,11 +11,13 @@ import { ERR_OK } from "../../api/config";
 import Singer from "../../common/js/singer";
 import listView from "../../base/listview/listview";
 import { mapMutations } from "vuex";
+import { playListMixin } from "../../common/js/mixin";
 
 const HOT_SINGER_LEN = 10;
 const HOT_NAME = "热门";
 
 export default {
+  mixins: [playListMixin],
   data() {
     return {
       singers: []
@@ -91,6 +93,12 @@ export default {
       });
       // concat() 方法用于连接两个或多个数组。
       return hot.concat(ret);
+    },
+    // mixin方法
+    handlePlayList(playList){
+      const bottom = playList.length > 0 ? "60px" : "";
+      this.$refs.singer.style.bottom = bottom;
+      this.$refs.sing.refresh();
     },
     ...mapMutations({
       setSinger: "SET_SINGER"

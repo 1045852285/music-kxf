@@ -18,12 +18,21 @@
           <h1 class="title" v-html="currentSong.name"></h1>
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
-        <div class="middle">
+        <div
+          class="middle"
+          @touchstart.prevent="middleTouchStart"
+          @touchmove.prevent="middleTouchMove"
+          @touchend="middleTouchEnd"
+        >
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" ref="imageWrapper">
                 <img ref="image" class="image" :class="cdCls" :src="currentSong.image" />
               </div>
+            </div>
+            <!-- 主页显示歌词的地方 -->
+            <div class="playing-lyric-wrapper">
+              <div class="playing-lyric">{{playingLyric}}</div>
             </div>
           </div>
           <!-- currentLyri默认为null  加&& 是为了当currentLyric不为空的时候把currentLyric.lines传进去 -->
@@ -42,6 +51,10 @@
           </Scroll>
         </div>
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentShow === 'cd'}"></span>
+            <span class="dot" :class="{'active':currentShow === 'lyric'}"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
@@ -111,11 +124,12 @@ import ProgressBar from "../../base/progress-bar/progress-bar";
 import ProgressCircle from "../../base/progress-circle/progress-circle";
 import { playMode } from "../../common/js/config";
 import { shuffle } from "../../common/js/util";
-import Scroll from "../../base/scroll/scroll"
+import Scroll from "../../base/scroll/scroll";
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
 
 const transform = prefixStyle("transform");
+const transitionDuration = prefixStyle("transitionDuration");
 
 export default {
   data() {
@@ -125,8 +139,15 @@ export default {
       redius: 32,
       currentLyric: null,
       // 当前这个歌词所在的行，初始化是0
-      currentLineNum:0
+      currentLineNum: 0,
+      // 默认选中第一个小点
+      currentShow: "cd",
+      // 歌曲播放显示一行歌词
+      playingLyric: ""
     };
+  },
+  created() {
+    this.touch = {};
   },
   components: {
     ProgressBar,
@@ -241,8 +262,14 @@ export default {
       this.setPlayingState(!this.playing);
     },
     togglePlaying() {
+      if (!this.songReady) {
+        return;
+      }
       // 小图标 在vuex里面改一下值  取反
       this.setPlayingState(!this.playing);
+      if (this.currentLyric) {
+        this.currentLyric.togglePlay();
+      }
     },
     // 下一首
     next() {
@@ -250,13 +277,21 @@ export default {
       if (!this.songReady) {
         return;
       }
-      let index = this.currentIndex + 1;
-      if (index === this.playList.length) {
-        index = 0;
-      }
-      this.setCurrentIndex(index);
-      if (!this.playing) {
-        this.togglePlaying();
+      // 这个if处理边界条件，如果列表里面只有一首歌的情况下点击下一首index就会+1，
+      // index === this.playList.length 使得index = 0
+      // 传入vuex中setCurrentIndex就会为0，使得currentSong的id就不会有变化
+      // 那么在watch里面的函数都不会被执行
+      if (this.playList.length === 1) {
+        this.loop();
+      } else {
+        let index = this.currentIndex + 1;
+        if (index === this.playList.length) {
+          index = 0;
+        }
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.togglePlaying();
+        }
       }
       this.songReady = false;
     },
@@ -266,15 +301,18 @@ export default {
       if (!this.songReady) {
         return;
       }
-      let index = this.currentIndex - 1;
-      if (index === -1) {
-        index = this.playList.length - 1;
+      if (this.playList.length === 1) {
+        this.loop();
+      } else {
+        let index = this.currentIndex - 1;
+        if (index === -1) {
+          index = this.playList.length - 1;
+        }
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.togglePlaying();
+        }
       }
-      this.setCurrentIndex(index);
-      if (!this.playing) {
-        this.togglePlaying();
-      }
-
       this.songReady = false;
     },
     // 歌曲播放完毕后触发
@@ -290,6 +328,10 @@ export default {
     loop() {
       this.$refs.audio.currentTime = 0;
       this.$refs.audio.play();
+      if (this.currentLyric) {
+        // seek偏移到歌曲的一开始
+        this.currentLyric.seek(0);
+      }
     },
     // audio 歌曲加载完毕执行
     ready() {
@@ -325,9 +367,14 @@ export default {
     },
     // 子组件progress-bar传递过来的数据
     onPercentChange(percent) {
-      this.$refs.audio.currentTime = this.currentSong.duration * percent;
+      const currentTime = this.currentSong.duration * percent;
+      this.$refs.audio.currentTime = currentTime;
       if (!this.playing) {
         this.togglePlaying();
+      }
+      // 拿到进度条传过来的时间百分比，然后改变歌曲歌词播放高亮显示的地方
+      if (this.currentLyric) {
+        this.currentLyric.seek(currentTime * 1000);
       }
     },
     // 切换播放状态
@@ -356,28 +403,43 @@ export default {
     },
     //
     getLyric() {
-      this.currentSong.getLyric().then(lyric => {
-        // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
-        this.currentLyric = new Lyric(lyric, this.handleLyric);
-        // 当歌曲正在播放的时候我们歌曲也会播放
-        if (this.playing) {
-          this.currentLyric.play();
-        }
-        console.log(this.currentLyric.lines);
-      });
+      // currentLyric实现随着歌曲的播放，播放到响应的位置，是内部使用了一个计算器
+      // currentLyric每次currentSong改变的时候，我们都会去重新new一个新的Lyricpase出来的对象，但是我们并没有做一个之前的清理操作，也就是之前的Lyricpase还会有一个计算器存在
+      // 详见视频7-24   1分零5秒处，所以会造成歌词来回闪动的bug，所以在切currentSong之前，重新去this.getLyric之前，我们要把当前的currentLyric给stop掉
+      this.currentSong
+        .getLyric()
+        .then(lyric => {
+          // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
+          this.currentLyric = new Lyric(lyric, this.handleLyric);
+          // 当歌曲正在播放的时候我们歌曲也会播放
+          if (this.playing) {
+            this.currentLyric.play();
+          }
+          // console.log(this.currentLyric.lines);
+          // 获取不到歌词的时候做一些清理操作
+        })
+        .catch(() => {
+          this.currentLyric = null;
+          this.playingLyric = "";
+          this.currentLineNum = 0;
+        });
     },
     // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
     handleLyric({ lineNum, txt }) {
       // lineNum 当前正在播放的歌词的行数
       this.currentLineNum = lineNum;
-      if (lineNum>5) {
+
+      if (lineNum > 5) {
         // 当前滚动如果大于5行的话，我们需要滚动lineNum-5的这个位置
-        let lineEl = this.$refs.lyricLine[lineNum-5]
+        let lineEl = this.$refs.lyricLine[lineNum - 5];
+
         // 调用scroll组里的方法
-        this.$refs.lyricList.scrollToElement(lineEl, 1000)
-      }else{
-        this.$refs.lyricList.scrollToElement(0, 0, 1000)
+        this.$refs.lyricList.scrollToElement(lineEl, 1000);
+      } else {
+        this.$refs.lyricList.scrollToElement(0, 0, 1000);
       }
+      // 展示当前播放的歌词
+      this.playingLyric = txt;
     },
     /**
      * 计算内层Image的transform，并同步到外层容器
@@ -398,6 +460,80 @@ export default {
 
       imageWrapper.style[transform] =
         wTransform === "none" ? iTransform : iTransform.concat(" ", wTransform);
+    },
+    // 鼠标点击时执行
+    middleTouchStart(e) {
+      this.touch.initiated = true;
+      const touch = e.touches[0];
+      this.touch.startX = touch.pageX;
+      this.touch.startY = touch.pageY;
+    },
+    // 鼠标点击住移动时执行
+    middleTouchMove(e) {
+      if (!this.touch.initiated) {
+        return;
+      }
+      const touch = e.touches[0];
+      // 为什么我们这里维护一个横轴坐标还是需要去维护一个纵轴坐标
+      // 因为滚动歌词的列表是用scroll去滚动的，是一个上下滚动的过程
+      // 如果说纵轴的偏移大于横轴的偏移的话，我们就不应该左右移动
+      const deltaX = touch.pageX - this.touch.startX;
+      const deltaY = touch.pageY - this.touch.startY;
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+      }
+      const left = this.currentShow === "cd" ? 0 : -window.innerWidth;
+      // max() 方法可返回两个指定的数中带有较大的值的那个数。
+      // min() 方法可返回两个指定的数中带有较小的值的那个数。
+      // 左滑deltaX是一个负数，右滑是正向
+      const offfsetWidth = Math.min(
+        0,
+        Math.max(-window.innerWidth, left + deltaX)
+      );
+      this.touch.percent = Math.abs(offfsetWidth / window.innerWidth);
+      // console.log(offfsetWidth);
+      // console.log(window.innerWidth);
+
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offfsetWidth}px,0,0)`;
+      this.$refs.lyricList.$el.style[transitionDuration] = 0;
+      // percent越大，透明度越小  反之
+      this.$refs.middleL.style.opacity = 1 - this.touch.percent;
+      this.$refs.middleL.style[transitionDuration] = 0;
+    },
+    // 鼠标松开时执行
+    middleTouchEnd() {
+      let offfsetWidth;
+      let opacity;
+      if (this.currentShow === "cd") {
+        if (this.touch.percent > 0.1) {
+          offfsetWidth = -window.innerWidth;
+          opacity = 0;
+          this.currentShow = "lyric";
+        } else {
+          offfsetWidth = 0;
+          opacity = 1;
+        }
+      } else {
+        // console.log(this.touch.percent);
+
+        if (this.touch.percent < 0.9 && this.touch.percent !== 1) {
+          offfsetWidth = 0;
+          opacity = 1;
+          this.currentShow = "cd";
+        } else {
+          opacity = 0;
+          offfsetWidth = -window.innerWidth;
+        }
+      }
+      const time = 300;
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offfsetWidth}px,0,0)`;
+      this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`;
+      this.$refs.middleL.style.opacity = opacity;
+      this.$refs.middleL.style[transitionDuration] = `${time}ms`;
     }
   },
   computed: {
@@ -447,10 +583,19 @@ export default {
       if (newSong.id === oldSong.id) {
         return;
       }
-      this.$nextTick(() => {
+      if (this.currentLyric) {
+        this.currentLyric.stop();
+      }
+      // 这里不用$nextTick 的原因是
+      // 当我们在微信里面播放的时候，如果说我们微信切到后台了，实际上js是不会的执行的，js不执行但他的audio
+      // 是可以把当前这首歌播放完的，当歌曲播放完之后他就会去触发end函数，但是end不会被执行，我们再去打开的时候
+      // songReady就永远不会设为true，如果songReady不为true的话，那我们就切换不了了
+      // 所以这个时候，调用play这个方法，让他延迟的时间更长一点，所以我们在这里用setTimeout
+      // 这样就可以解决了我们在手机浏览器去使用他从后台切到前台的时候，保证js会正常播放
+      setTimeout(() => {
         this.$refs.audio.play();
         this.getLyric();
-      });
+      },1000);
     },
     // 监听playing的状态
     playing(newPlaying) {
