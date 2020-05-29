@@ -52,6 +52,7 @@ export default {
         Math.max(0, this.touch.left + deltaX)
       );
       this._offset(offsetWidth);
+      this.$emit('percentChanging', this._getPercent())
     },
     // 手指离开
     progressTouchEnd() {
@@ -60,11 +61,7 @@ export default {
       this._triggerPercent()
     },
     _triggerPercent(){
-      // 进度条总长度
-      const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth;
-      // 进度条已经拖动结束之后的长度 / 总长度
-      const percent = this.$refs.progress.clientWidth / barWidth
-      this.$emit("percentChange",percent)
+      this.$emit("percentChange",this._getPercent())
     },
     // 进度条点击跳转
     progressClick(e){
@@ -75,6 +72,12 @@ export default {
       // this._offset(e.offsetX)
       this._offset(offsetWidth)
       this._triggerPercent()
+    },
+    _getPercent(){
+      // 进度条总长度
+      const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+      // 进度条已经拖动结束之后的长度 / 总长度
+      return this.$refs.progress.clientWidth / barWidth
     },
     _offset(offsetWidth) {
       this.$refs.progress.style.width = `${offsetWidth}px`;

@@ -18,3 +18,6 @@ export const SET_PLAY_MODE = "SET_PLAY_MODE"
 
 // 当前播放歌曲
 export const SET_CURRENT_INDEX = "SET_CURRENT_INDEX"
+
+// 歌单对象
+export const SET_DISC = "SET_DISC"

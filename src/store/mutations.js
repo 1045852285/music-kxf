@@ -35,5 +35,10 @@ const mutations = {
     [types.SET_CURRENT_INDEX](state, currentIndex) {
         state.currentIndex = currentIndex;
     },
+
+    // 歌单对象
+    [types.SET_DISC](state, disc) {
+        state.disc = disc;
+    },
 }
 export default mutations;

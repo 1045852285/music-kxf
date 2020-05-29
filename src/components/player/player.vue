@@ -58,7 +58,7 @@
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar @percentChange="onPercentChange" :percent="percent"></progress-bar>
+              <progress-bar @percentChange="onPercentChange" @percentChanging="onProgressBarChanging" :percent="percent"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
@@ -70,7 +70,7 @@
               <i @click="prev" class="icon-prev"></i>
             </div>
             <div class="icon i-center" :class="disableCls">
-              <i @click="togglePlay" :class="playIcon"></i>
+              <i class="needsclick" @click="togglePlaying" :class="playIcon"></i>
             </div>
             <div class="icon i-right" :class="disableCls">
               <i @click="next" class="icon-next"></i>
@@ -257,10 +257,6 @@ export default {
     // 动画结束
 
     // 大图标 点击音乐暂停开始
-    togglePlay() {
-      // 在vuex里面改一下值  取反
-      this.setPlayingState(!this.playing);
-    },
     togglePlaying() {
       if (!this.songReady) {
         return;
@@ -393,6 +389,12 @@ export default {
       this.resetCurrentIndex(list);
       this.setPlayList(list);
     },
+    onProgressBarChanging (percent) {
+        this.currentTime = this.currentSong.duration * percent
+        if (this.currentLyric) {
+          this.currentLyric.seek(this.currentTime * 1000)
+        }
+      },
     // 数组被打乱之后，还能确保下标是正在播放的这首歌
     resetCurrentIndex(list) {
       // 在打乱的数组里面找到正在播放的这首歌的下标，然后传入vuex里面

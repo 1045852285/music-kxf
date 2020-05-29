@@ -5,7 +5,7 @@ import Rank from '../components/rank/rank.vue';
 import Search from '../components/search/search.vue';
 import Singer from '../components/singer/singer.vue';
 import SingerDetail from '../components/singer-detail/singer-detail.vue';
-
+import disc from '../components/disc/disc.vue'
 
 Vue.use(VueRouter);
 
@@ -18,6 +18,13 @@ const routes = [
     path: '/recommend',
     name: 'recommend',
     component: Recommend,
+    children: [
+      {
+        path: ':id',
+        name: 'disc',
+        component: disc,
+      }
+    ]
   },
   {
     path: '/singer',
@@ -51,7 +58,7 @@ const router = new VueRouter({
 
 
 // 添加这下面一段代码，就可以解决报错 
- 
+
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
