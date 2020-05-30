@@ -40,3 +40,7 @@ export const randomPlay = function ({ commit }, { list }) {
 export const savePlayHistory = function ({ commit }, song) {
     commit(types.SET_PLAY_HISTORY, savePlay(song))
 }
+
+export const deleteFavoriteList = function ({ commit }, song) {
+    commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
+}

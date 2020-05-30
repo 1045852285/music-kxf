@@ -115,8 +115,8 @@
     <audio
       ref="audio"
       :src="currentSong.url"
+      @playing="ready"
       @timeupdate="updateTime"
-      @canplay="ready"
       @error="err"
       @ended="end"
       @pause="paused"
@@ -132,8 +132,8 @@ import { prefixStyle } from "../../common/js/dom";
 import ProgressBar from "../../base/progress-bar/progress-bar";
 import ProgressCircle from "../../base/progress-circle/progress-circle";
 import { playMode } from "../../common/js/config";
-import { shuffle } from "../../common/js/util";
 import Scroll from "../../base/scroll/scroll";
+import { playerMixin } from '../../common/js/mixin'
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
 
@@ -143,6 +143,7 @@ const transitionDuration = prefixStyle("transitionDuration");
  const timeExp = /\[(\d{2}):(\d{2}):(\d{2})]/g
 
 export default {
+  mixins: [playerMixin],
   data() {
     return {
       songReady: false,
@@ -177,14 +178,6 @@ export default {
     ...mapMutations({
       // 播放器展开和收起状态
       setFullScreen: "SET_FULL_SCREEN",
-      // 播放暂停状态
-      setPlayingState: "SET_PLAYING_STATE",
-      //  // 当前播放歌曲下标
-      setCurrentIndex: "SET_CURRENT_INDEX",
-      // 播放顺序（顺序，随机播放）
-      setPlayMode: "SET_PLAY_MODE",
-      // 歌曲列表，是无序列表
-      setPlayList: "SET_PLAYLIST"
     }),
     // 动画开始
     enter(el, done) {
@@ -347,6 +340,7 @@ export default {
     // audio 歌曲加载完毕执行
     ready() {
       clearTimeout(this.timer);
+        // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true;
       this.canLyricPlay = true;
       this.savePlayHistory(this.currentSong);
@@ -403,37 +397,12 @@ export default {
         this.currentLyric.seek(currentTime * 1000);
       }
     },
-    // 切换播放状态
-    changeMode() {
-      // 很简单,1除以3的商是0,余数自然是1.那么2除以3的商也是0,
-      // 余数是2也就是说,一个数除以另一个数,要是比另一个数小的话,余数就是它自己.
-      const mode = (this.mode + 1) % 3;
-      this.setPlayMode(mode);
-      let list = null;
-
-      if (mode === playMode.random) {
-        list = shuffle(this.sequenceList);
-      } else {
-        list = this.sequenceList;
-      }
-      this.resetCurrentIndex(list);
-      this.setPlayList(list);
-    },
     onProgressBarChanging(percent) {
       this.currentTime = this.currentSong.duration * percent;
       if (this.currentLyric) {
         this.currentLyric.seek(this.currentTime * 1000);
       }
     },
-    // 数组被打乱之后，还能确保下标是正在播放的这首歌
-    resetCurrentIndex(list) {
-      // 在打乱的数组里面找到正在播放的这首歌的下标，然后传入vuex里面
-      let index = list.findIndex(item => {
-        return item.id === this.currentSong.id;
-      });
-      this.setCurrentIndex(index);
-    },
-    //
     getLyric() {
       // currentLyric实现随着歌曲的播放，播放到响应的位置，是内部使用了一个计算器
       // currentLyric每次currentSong改变的时候，我们都会去重新new一个新的Lyricpase出来的对象，但是我们并没有做一个之前的清理操作，也就是之前的Lyricpase还会有一个计算器存在
@@ -601,6 +570,7 @@ export default {
       this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`;
       this.$refs.middleL.style.opacity = opacity;
       this.$refs.middleL.style[transitionDuration] = `${time}ms`;
+      this.touch.initiated = false
     },
     ...mapActions(["savePlayHistory"])
   },
@@ -625,22 +595,12 @@ export default {
     percent() {
       return this.currentTime / this.currentSong.duration;
     },
-    // 播放模式切换
-    iconMode() {
-      return this.mode === playMode.sequence
-        ? "icon-sequence"
-        : this.mode === playMode.loop
-        ? "icon-loop"
-        : "icon-random";
-    },
     ...mapGetters([
       "fullScreen",
-      "playList",
-      "currentSong",
       "playing",
       "currentIndex",
-      "mode",
-      "sequenceList"
+      'sequenceList',
+      'favoriteList'
     ])
   },
   watch: {

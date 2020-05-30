@@ -18,5 +18,6 @@ const state = {
     // 歌单对象
     disc: {},
     playHistory: [],
+    favoriteList: []
 }
 export default state;

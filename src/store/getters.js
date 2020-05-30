@@ -1,3 +1,5 @@
+import Song from '../common/js/song'
+
 // 点击进入歌手详情页面时带入的参数
 export const singer = state => state.singer
 
@@ -27,3 +29,8 @@ export const currentSong = (state) => {
 // 歌单对象
 export const disc = state => state.disc
 
+export const favoriteList = (state) => {
+    return state.favoriteList.map((song) => {
+        return new Song(song)
+    })
+}
