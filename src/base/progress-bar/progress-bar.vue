@@ -84,7 +84,14 @@ export default {
       this.$refs.progressBtn.style[
         transform
       ] = `translate3d(${offsetWidth}px,0,0)`;
-    }
+    },
+    setProgressOffset (percent) {
+        if (percent >= 0 && !this.touch.initiated) {
+          const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+          const offsetWidth = percent * barWidth
+          this._offset(offsetWidth)
+        }
+      },
   },
   watch: {
     percent(newPercent) {

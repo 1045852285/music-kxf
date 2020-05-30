@@ -40,5 +40,9 @@ const mutations = {
     [types.SET_DISC](state, disc) {
         state.disc = disc;
     },
+    [types.SET_PLAY_HISTORY](state, history) {
+        state.playHistory = history
+    },
+    
 }
 export default mutations;

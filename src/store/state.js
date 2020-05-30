@@ -16,6 +16,7 @@ const state = {
     // 当前播放的索引
     currentIndex: -1,
     // 歌单对象
-    disc: {}
+    disc: {},
+    playHistory: [],
 }
 export default state;

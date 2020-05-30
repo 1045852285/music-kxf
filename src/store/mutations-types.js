@@ -21,3 +21,5 @@ export const SET_CURRENT_INDEX = "SET_CURRENT_INDEX"
 
 // 歌单对象
 export const SET_DISC = "SET_DISC"
+
+export const SET_PLAY_HISTORY = 'SET_PLAY_HISTORY'
