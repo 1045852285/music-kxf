@@ -133,14 +133,14 @@ import ProgressBar from "../../base/progress-bar/progress-bar";
 import ProgressCircle from "../../base/progress-circle/progress-circle";
 import { playMode } from "../../common/js/config";
 import Scroll from "../../base/scroll/scroll";
-import { playerMixin } from '../../common/js/mixin'
+import { playerMixin } from "../../common/js/mixin";
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
 
- const timeExp = /\[(\d{2}):(\d{2}):(\d{2})]/g
+const timeExp = /\[(\d{2}):(\d{2}):(\d{2})]/g;
 
 export default {
   mixins: [playerMixin],
@@ -177,7 +177,7 @@ export default {
     },
     ...mapMutations({
       // 播放器展开和收起状态
-      setFullScreen: "SET_FULL_SCREEN",
+      setFullScreen: "SET_FULL_SCREEN"
     }),
     // 动画开始
     enter(el, done) {
@@ -319,7 +319,7 @@ export default {
     },
     // 歌曲播放完毕后触发
     end() {
-      this.currentTime = 0
+      this.currentTime = 0;
       // loop单曲循环
       if (this.mode === playMode.loop) {
         this.loop();
@@ -331,7 +331,7 @@ export default {
     loop() {
       this.$refs.audio.currentTime = 0;
       this.$refs.audio.play();
-      this.setPlayingState(true)
+      this.setPlayingState(true);
       if (this.currentLyric) {
         // seek偏移到歌曲的一开始
         this.currentLyric.seek(0);
@@ -340,9 +340,10 @@ export default {
     // audio 歌曲加载完毕执行
     ready() {
       clearTimeout(this.timer);
-        // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
+      // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true;
       this.canLyricPlay = true;
+      console.log(this.currentSong);
       this.savePlayHistory(this.currentSong);
       // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
       if (this.currentLyric && !this.isPureMusic) {
@@ -350,12 +351,12 @@ export default {
       }
     },
     // pause() 方法停止（暂停）当前播放的音频或视频。
-    paused () {
-        this.setPlayingState(false)
-        if (this.currentLyric) {
-          this.currentLyric.stop()
-        }
-      },
+    paused() {
+      this.setPlayingState(false);
+      if (this.currentLyric) {
+        this.currentLyric.stop();
+      }
+    },
     // audio 歌曲发生错误执行
     err() {
       clearTimeout(this.timer);
@@ -388,7 +389,7 @@ export default {
     // 子组件progress-bar传递过来的数据
     onPercentChange(percent) {
       const currentTime = this.currentSong.duration * percent;
-      this.currentTime =this.$refs.audio.currentTime = currentTime;
+      this.currentTime = this.$refs.audio.currentTime = currentTime;
       if (!this.playing) {
         this.togglePlaying();
       }
@@ -411,19 +412,23 @@ export default {
         .getLyric()
         .then(lyric => {
           if (this.currentSong.lyric !== lyric) {
-            return
+            return;
           }
           // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
           this.currentLyric = new Lyric(lyric, this.handleLyric);
-          this.isPureMusic = !this.currentLyric.lines.length
-          // 当歌曲正在播放的时候我们歌曲也会播放
+          this.isPureMusic = !this.currentLyric.lines.length;
+          console.log(this.currentLyric);
+
           if (this.isPureMusic) {
-            this.pureMusicLyric = this.currentLyric.lrc.replace(timeExp, '').trim()
-            this.playingLyric = this.pureMusicLyric
+            this.pureMusicLyric = this.currentLyric.lrc
+              .replace(timeExp, "")
+              .trim();
+            this.playingLyric = this.pureMusicLyric;
           } else {
+            // 当歌曲正在播放的时候我们歌曲也会播放
             if (this.playing && this.canLyricPlay) {
               // 这个时候有可能用户已经播放了歌曲，要切到对应位置
-              this.currentLyric.seek(this.currentTime * 1000)
+              this.currentLyric.seek(this.currentTime * 1000);
             }
           }
           // console.log(this.currentLyric.lines);
@@ -570,7 +575,7 @@ export default {
       this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`;
       this.$refs.middleL.style.opacity = opacity;
       this.$refs.middleL.style[transitionDuration] = `${time}ms`;
-      this.touch.initiated = false
+      this.touch.initiated = false;
     },
     ...mapActions(["savePlayHistory"])
   },
@@ -599,8 +604,8 @@ export default {
       "fullScreen",
       "playing",
       "currentIndex",
-      'sequenceList',
-      'favoriteList'
+      "sequenceList",
+      "favoriteList"
     ])
   },
   watch: {
@@ -621,9 +626,11 @@ export default {
         this.playingLyric = "";
         this.currentLineNum = 0;
       }
-      this.$refs.audio.src = newSong.url;
-      console.log(newSong.url);
-      this.$refs.audio.play();
+      this.$nextTick(() => {
+        this.$refs.audio.src = newSong.url;
+        console.log(newSong.url);
+        this.$refs.audio.play();
+      });
       // 若歌曲 5s 未播放，则认为超时，修改状态确保可以切换歌曲。
       clearTimeout(this.timer);
       // 这里不用$nextTick 的原因是
