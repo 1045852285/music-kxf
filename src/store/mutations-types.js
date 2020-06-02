@@ -25,3 +25,6 @@ export const SET_DISC = "SET_DISC"
 export const SET_PLAY_HISTORY = 'SET_PLAY_HISTORY'
 
 export const SET_FAVORITE_LIST = 'SET_FAVORITE_LIST'
+
+// 歌曲排行传的对象
+export const SET_TOPLIST = "SET_TOPLIST"

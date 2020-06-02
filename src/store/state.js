@@ -18,6 +18,8 @@ const state = {
     // 歌单对象
     disc: {},
     playHistory: [],
-    favoriteList: []
+    favoriteList: [],
+    // 歌曲排行传的对象
+    topList: {}
 }
 export default state;

@@ -34,3 +34,6 @@ export const favoriteList = (state) => {
         return new Song(song)
     })
 }
+
+// 歌曲排行传的对象
+export const topList = state => state.topList

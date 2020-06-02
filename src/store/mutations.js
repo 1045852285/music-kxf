@@ -43,8 +43,13 @@ const mutations = {
     [types.SET_PLAY_HISTORY](state, history) {
         state.playHistory = history
     },
-    [types.SET_FAVORITE_LIST] (state, list) {
+    [types.SET_FAVORITE_LIST](state, list) {
         state.favoriteList = list
-      }
+    },
+    // 歌曲排行传的对象
+    [types.SET_TOPLIST](state, topList) {
+        state.topList = topList;
+    },
+
 }
 export default mutations;
