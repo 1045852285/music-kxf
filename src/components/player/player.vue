@@ -156,6 +156,7 @@ export default {
       currentShow: "cd",
       // 歌曲播放显示一行歌词
       playingLyric: "",
+      // 有没有歌词
       isPureMusic: false,
       pureMusicLyric: ""
     };

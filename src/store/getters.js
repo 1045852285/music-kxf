@@ -35,5 +35,9 @@ export const favoriteList = (state) => {
     })
 }
 
+// 搜索历史
+export const searchHistory = (state) => state.searchHistory
+
+
 // 歌曲排行传的对象
 export const topList = state => state.topList

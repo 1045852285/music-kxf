@@ -1,4 +1,5 @@
 import { playMode } from '../common/js/config'
+import { loadSearch } from '../common/js/cache'
 
 const state = {
     // 点击进入歌手详情页面时带入的参数
@@ -20,6 +21,9 @@ const state = {
     playHistory: [],
     favoriteList: [],
     // 歌曲排行传的对象
-    topList: {}
+    topList: {},
+    // 搜索历史  loadSearch()从本地存储中读数据
+    searchHistory: loadSearch()
+    
 }
 export default state;

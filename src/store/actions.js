@@ -37,10 +37,73 @@ export const randomPlay = function ({ commit }, { list }) {
     commit(types.SET_PLAYING_STATE, true)
 }
 
+export const insertSong = function ({ commit, state }, song) {
+    let playList = state.playList.slice()
+    let sequenceList = state.sequenceList.slice()
+    let currentIndex = state.currentIndex
+    // 记录当前歌曲
+    let currentSong = playList[currentIndex]
+    // console.log(currentIndex);当第一次添加歌曲时打印-1
+    
+    // 先查一下我们插入的歌曲在不在playList里面，并返回其索引
+    let fpIndex = findIndex(playList, song)
+    // 因为是插入歌曲，所以索引要加1
+    currentIndex++
+    // 插入这首歌到当前索引位置
+    playList.splice(currentIndex, 0, song)
+    // 如果已经包含了这首歌
+    if (fpIndex > -1) {
+        // 如果当前插入的序号，大于我们之前列表中的序号
+        if (currentIndex > fpIndex) {
+            playList.splice(fpIndex, 1)
+            currentIndex--
+        } else {
+            playList.splice(fpIndex + 1, 1)
+        }
+    }
+
+    // 当前播放的歌曲从我们的sequenceList里面找，返回下标
+    // 这个currentIndex是我们将要插入的位置
+    let currentSIndex = findIndex(sequenceList, currentSong) + 1;
+    // 先查一下我们插入的歌曲在不在sequenceList里面，并返回其索引
+    let fsIndex = findIndex(sequenceList, song)
+
+    sequenceList.splice(currentSIndex, 0, song)
+
+    if (fsIndex > -1) {
+        if (currentSIndex > fsIndex) {
+            sequenceList.splice(fpIndex, 1)
+        } else {
+            sequenceList.splice(fpIndex + 1, 1)
+        }
+    }
+
+    commit(types.SET_PLAYLIST, playList)
+    commit(types.SET_SEQUENCE_LIST, sequenceList)
+    commit(types.SET_CURRENT_INDEX, currentIndex)
+    commit(types.SET_FULL_SCREEN, true)
+    commit(types.SET_PLAYING_STATE, true)
+}
+
 export const savePlayHistory = function ({ commit }, song) {
     commit(types.SET_PLAY_HISTORY, savePlay(song))
 }
 
 export const deleteFavoriteList = function ({ commit }, song) {
     commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
+}
+
+// 添加   搜索历史
+export const saveSelectHistory = function({commit}, query) {
+    commit(types.SET_SEARCH_HOSTORY, saveSearch(query))
+}
+
+// 删除   指定搜索历史
+export const deletSelectHistory = function({commit}, query) {
+    commit(types.SET_SEARCH_HOSTORY, deleteSearch(query))
+}
+
+// 删除   全部搜索历史
+export const clearSelectHistory = function({commit}) {
+    commit(types.SET_SEARCH_HOSTORY, clearSearch())
 }

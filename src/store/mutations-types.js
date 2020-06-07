@@ -28,3 +28,7 @@ export const SET_FAVORITE_LIST = 'SET_FAVORITE_LIST'
 
 // 歌曲排行传的对象
 export const SET_TOPLIST = "SET_TOPLIST"
+
+// 搜索历史
+export const SET_SEARCH_HOSTORY = "SET_SEARCH_HOSTORY"
+
