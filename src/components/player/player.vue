@@ -106,11 +106,12 @@
             <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
           </Progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlayList">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <play-list ref="playlist"></play-list>
     <!-- 播放功能  timeupdate执行时触发  canplay歌曲加载完毕执行 error发生错误时执行 ended歌曲播放完毕后触发-->
     <audio
       ref="audio"
@@ -136,6 +137,7 @@ import Scroll from "../../base/scroll/scroll";
 import { playerMixin } from "../../common/js/mixin";
 // 歌词自动滚动插件
 import Lyric from "lyric-parser";
+import PlayList from "../../components/playlist/playlist";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
@@ -167,9 +169,14 @@ export default {
   components: {
     ProgressBar,
     ProgressCircle,
-    Scroll
+    Scroll,
+    PlayList
   },
   methods: {
+    // 歌曲列表组件的显示和隐藏
+    showPlayList() {
+      this.$refs.playlist.show();
+    },
     back() {
       this.setFullScreen(false);
     },
@@ -483,6 +490,8 @@ export default {
     },
     // 鼠标点击时执行
     middleTouchStart(e) {
+      // console.log("鼠标点击时执行");
+
       this.touch.initiated = true;
       // 用来判断是否是一次移动
       this.touch.moved = false;
@@ -493,6 +502,8 @@ export default {
     },
     // 鼠标点击住移动时执行
     middleTouchMove(e) {
+      // console.log("鼠标点击住移动时执行");
+
       if (!this.touch.initiated) {
         return;
       }
@@ -543,6 +554,8 @@ export default {
     },
     // 鼠标松开时执行
     middleTouchEnd() {
+      // console.log("鼠标松开时执行");
+
       if (!this.touch.moved) {
         return;
       }
@@ -612,6 +625,13 @@ export default {
   watch: {
     // 当currentSong变化时调用
     currentSong(newSong, oldSong) {
+      // 当前列表最后一个删除时，这个watch会监听currentSong的变化
+      // 实际上列表中已经没有歌曲了，newSong实际上是一个空的obj
+      // 所以oldSong对于的话这块是一个undefinde
+      // 所以这里对newSong做一个判断，就不会往下执行了
+      if (!newSong.id) {
+        return;
+      }
       // 如果不加这个判断，list数组一被打乱，根据下标重新计算currentSong
       // 这个监听就会被执行，导致了暂停状态的时候也会播放歌曲
       if (!newSong.id || !newSong.url || newSong.id === oldSong.id) {

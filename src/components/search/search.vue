@@ -66,8 +66,6 @@ export default {
   },
   methods: {
     handlePlayList(playList) {
-      console.log(12333333333);
-
       const bottom = playList.length > 0 ? "60px" : "";
 
       this.$refs.shortcutWrapper.style.bottom = bottom;
