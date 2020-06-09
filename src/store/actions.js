@@ -85,6 +85,7 @@ export const insertSong = function ({ commit, state }, song) {
     commit(types.SET_PLAYING_STATE, true)
 }
 
+// 播放历史
 export const savePlayHistory = function ({ commit }, song) {
     commit(types.SET_PLAY_HISTORY, savePlay(song))
 }

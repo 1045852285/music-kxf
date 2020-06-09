@@ -26,6 +26,9 @@ export const currentSong = (state) => {
     return state.playList[state.currentIndex] || {}
 }
 
+// 播放历史
+export const playHistory = state => state.playHistory
+
 // 歌单对象
 export const disc = state => state.disc
 

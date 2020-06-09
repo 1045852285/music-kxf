@@ -4,7 +4,7 @@
       <search-box ref="searchBox" @query="onQueryChange"></search-box>
     </div>
     <div ref="shortcutWrapper" class="shortcut-wrapper" v-show="!query">
-      <scroll ref="shortcut" class="shortcut" :data="shortcut">
+      <scroll :refreshDelay="refreshDelay" ref="shortcut" class="shortcut" :data="shortcut">
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -39,14 +39,14 @@ import SearchBox from "../../base/search-box/search-box";
 import { getHotKey } from "../../api/search";
 import { ERR_OK } from "../../api/config";
 import Suggest from "../../components/suggest/suggest";
-import { mapActions, mapGetters } from "vuex";
+import { mapActions } from "vuex";
 import SearchList from "../../base/search-list/search-list";
 import confirm from "../../base/confirm/confirm";
 import Scroll from "../../base/scroll/scroll";
-import { playListMixin } from "../../common/js/mixin";
+import { playListMixin, searchMixin } from "../../common/js/mixin";
 
 export default {
-  mixins: [playListMixin],
+  mixins: [playListMixin, searchMixin],
   components: {
     SearchBox,
     Suggest,
@@ -56,8 +56,7 @@ export default {
   },
   data() {
     return {
-      hotKey: [],
-      query: ""
+      hotKey: []
     };
   },
   created() {
@@ -74,13 +73,6 @@ export default {
       this.$refs.searchResult.style.bottom = bottom;
       this.$refs.suggest.refresh();
     },
-    addQuery(k) {
-      this.$refs.searchBox.setQuery(k);
-    },
-    onQueryChange(query) {
-      this.query = query.trim();
-      // console.log(query);
-    },
     _getHotKey() {
       getHotKey().then(res => {
         if (res.code === ERR_OK) {
@@ -88,18 +80,10 @@ export default {
         }
       });
     },
-    blurInput() {
-      this.$refs.searchBox.blur();
-    },
-    saveSelect() {
-      this.saveSelectHistory(this.query);
-    },
     showConfirm() {
       this.$refs.confirm.show();
     },
     ...mapActions([
-      "saveSelectHistory",
-      "deletSelectHistory",
       "clearSelectHistory"
     ])
   },
@@ -113,7 +97,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["searchHistory"]),
     shortcut() {
       return this.hotKey.concat(this.searchHistory);
     }

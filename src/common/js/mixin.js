@@ -126,3 +126,36 @@ export const playerMixin = {
         ])
     }
 }
+
+
+export const searchMixin = {
+    data() {
+        return {
+            query: '',
+            // scroll延迟重新计算高度的时间
+            refreshDelay: 100
+        }
+    },
+    computed: {
+        ...mapGetters(["searchHistory"])
+    },
+    methods: {
+        blurInput() {
+            this.$refs.searchBox.blur();
+        },
+        saveSelect() {
+            this.saveSelectHistory(this.query);
+        },
+        onQueryChange(query) {
+            this.query = query.trim();
+            // console.log(query);
+        },
+        addQuery(k) {
+            this.$refs.searchBox.setQuery(k);
+        },
+        ...mapActions([
+            "saveSelectHistory",
+            "deletSelectHistory"
+        ])
+    }
+}

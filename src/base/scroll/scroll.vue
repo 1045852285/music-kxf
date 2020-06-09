@@ -31,6 +31,10 @@ export default {
     beforeScroll: {
       type: Boolean,
       default: false
+    },
+    refreshDelay: {
+      type: Number,
+      default: 20
     }
   },
   mounted() {
@@ -94,7 +98,14 @@ export default {
     data() {
       setTimeout(() => {
         this.refresh();
-      }, 20);
+        // 这里做成一个变量是因为
+        // 我们添加的歌曲的时候有个动画过渡100ms
+        // 而这里渲染只是延迟20ms
+        // 当这里监听到data的变化去重新计算scroll滚动高度，延迟20ms计算完了，页面上
+        // 的动画还没执行完，等页面上动画执行完之后，这里早就已经把scroll的高度渲染完了
+        // 所以滚动会有问题，最后一首歌曲，滚动不上来
+        // 确保高度已经固定了，再去重新计算
+      }, this.refreshDelay);
     }
   }
 };

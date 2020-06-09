@@ -352,6 +352,7 @@ export default {
       this.songReady = true;
       this.canLyricPlay = true;
       console.log(this.currentSong);
+      // 播放历史，写入vuex中
       this.savePlayHistory(this.currentSong);
       // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
       if (this.currentLyric && !this.isPureMusic) {

@@ -65,6 +65,7 @@ export function loadSearch () {
   return storage.get(SEARCH_KEY, [])
 }
 
+// 存储播放历史
 export function savePlay (song) {
   let songs = storage.get(PLAY_KEY, [])
   insertArray(songs, song, (item) => {
@@ -74,6 +75,7 @@ export function savePlay (song) {
   return songs
 }
 
+// 读播放历史
 export function loadPlay () {
   return storage.get(PLAY_KEY, [])
 }

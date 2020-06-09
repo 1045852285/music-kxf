@@ -40,6 +40,8 @@ const mutations = {
     [types.SET_DISC](state, disc) {
         state.disc = disc;
     },
+
+    // 播放历史 
     [types.SET_PLAY_HISTORY](state, history) {
         state.playHistory = history
     },
