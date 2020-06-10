@@ -80,6 +80,7 @@ export function loadPlay () {
   return storage.get(PLAY_KEY, [])
 }
 
+// 添加收藏歌曲
 export function saveFavorite (song) {
   let songs = storage.get(FAVORITE_KEY, [])
   insertArray(songs, song, (item) => {
@@ -89,6 +90,7 @@ export function saveFavorite (song) {
   return songs
 }
 
+// 删除收藏歌曲
 export function deleteFavorite (song) {
   let songs = storage.get(FAVORITE_KEY, [])
   deleteFromArray(songs, (item) => {
@@ -98,6 +100,7 @@ export function deleteFavorite (song) {
   return songs
 }
 
+// 初始状态的时候读取本地存储里面收藏的歌曲
 export function loadFavorite () {
   return storage.get(FAVORITE_KEY, [])
 }

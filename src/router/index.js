@@ -1,14 +1,24 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Recommend from '../components/recommend/recommend.vue';
-import Rank from '../components/rank/rank.vue';
-import Search from '../components/search/search.vue';
-import Singer from '../components/singer/singer.vue';
-import SingerDetail from '../components/singer-detail/singer-detail.vue';
-import disc from '../components/disc/disc.vue'
-import TopList from '../components/top-list/top-list.vue'
+// import Recommend from '../components/recommend/recommend.vue';
+// import Rank from '../components/rank/rank.vue';
+// import Search from '../components/search/search.vue';
+// import Singer from '../components/singer/singer.vue';
+// import SingerDetail from '../components/singer-detail/singer-detail.vue';
+// import disc from '../components/disc/disc.vue'
+// import TopList from '../components/top-list/top-list.vue'
+// import userCenter from '../components/user-center/user-center.vue'
 
 Vue.use(VueRouter);
+
+const Recommend = () => import('../components/recommend/recommend.vue')
+const Rank = () => import('../components/rank/rank.vue')
+const Search = () => import('../components/search/search.vue')
+const Singer = () => import('../components/singer/singer.vue')
+const SingerDetail = () => import('../components/singer-detail/singer-detail.vue')
+const disc = () => import('../components/disc/disc.vue')
+const TopList = () => import('../components/top-list/top-list.vue')
+const userCenter = () => import('../components/user-center/user-center.vue')
 
 const routes = [
   {
@@ -63,6 +73,11 @@ const routes = [
       }
     ]
   },
+  {
+    path: '/user',
+    name: 'user',
+    component: userCenter
+  }
 ];
 
 const router = new VueRouter({

@@ -91,6 +91,7 @@ export const playerMixin = {
             })
             this.setCurrentIndex(index)
         },
+        // 点击添加到我的收藏，反之
         toggleFavorite(song) {
             if (this.isFavorite(song)) {
                 this.deleteFavoriteList(song)
@@ -98,12 +99,14 @@ export const playerMixin = {
                 this.saveFavoriteList(song)
             }
         },
+        // 收藏后显示红心，反之
         getFavoriteIcon(song) {
             if (this.isFavorite(song)) {
                 return 'icon-favorite'
             }
             return 'icon-not-favorite'
         },
+        // 查找传过来的歌曲是否在本地里面
         isFavorite(song) {
             const index = this.favoriteList.findIndex((item) => {
                 return item.id === song.id

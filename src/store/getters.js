@@ -27,11 +27,16 @@ export const currentSong = (state) => {
 }
 
 // 播放历史
-export const playHistory = state => state.playHistory
+export const playHistory = (state) => {
+    return state.playHistory.map((song) => {
+        return new Song(song)
+    })
+}
 
 // 歌单对象
 export const disc = state => state.disc
 
+// 收藏列表
 export const favoriteList = (state) => {
     return state.favoriteList.map((song) => {
         return new Song(song)

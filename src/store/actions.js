@@ -37,6 +37,7 @@ export const randomPlay = function ({ commit }, { list }) {
     commit(types.SET_PLAYING_STATE, true)
 }
 
+// 点击插入到当前播放队列
 export const insertSong = function ({ commit, state }, song) {
     let playList = state.playList.slice()
     let sequenceList = state.sequenceList.slice()
@@ -88,10 +89,6 @@ export const insertSong = function ({ commit, state }, song) {
 // 播放历史
 export const savePlayHistory = function ({ commit }, song) {
     commit(types.SET_PLAY_HISTORY, savePlay(song))
-}
-
-export const deleteFavoriteList = function ({ commit }, song) {
-    commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
 }
 
 // 添加   搜索历史
@@ -148,3 +145,14 @@ export const deleteSongList = function({commit}) {
     commit(types.SET_CURRENT_INDEX, -1)
     commit(types.SET_PLAYING_STATE, false)
 }
+
+// 添加收藏歌曲
+export const saveFavoriteList = function ({ commit }, song) {
+    commit(types.SET_FAVORITE_LIST, saveFavorite(song))
+  }
+
+// 删除收藏歌曲
+export const deleteFavoriteList = function ({ commit }, song) {
+    commit(types.SET_FAVORITE_LIST, deleteFavorite(song))
+}
+
