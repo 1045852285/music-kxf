@@ -24,7 +24,7 @@
       ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list @select="selectItem" :songs="songs"></song-list>
+        <song-list @select="selectItem" :rank="rank" :songs="songs"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -61,6 +61,10 @@ export default {
     title: {
       type: String,
       default: ""
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -103,7 +107,7 @@ export default {
       this.randomPlay({ list: this.songs });
     },
     // mixin方法
-    handlePlayList(playList){
+    handlePlayList(playList) {
       const bottom = playList.length > 0 ? "60px" : "";
       this.$refs.list.$el.style.bottom = bottom;
       this.$refs.list.refresh();
