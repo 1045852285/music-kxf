@@ -84,7 +84,11 @@
               <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon" @click="toggleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
+              <i
+                class="icon"
+                @click="toggleFavorite(currentSong)"
+                :class="getFavoriteIcon(currentSong)"
+              ></i>
             </div>
           </div>
         </div>
@@ -261,7 +265,7 @@ export default {
       const x = -(window.innerWidth / 2 - paddingLeft);
       // 初始y坐标
       const y = window.innerHeight - paddingTop - width / 2 - paddingBottom;
-        
+
       return {
         x,
         y,
@@ -376,7 +380,7 @@ export default {
     updateTime(e) {
       // e.target.currentTime; 当前播放的时间，currentTime是一个可读写的属性
       this.currentTime = e.target.currentTime;
-      
+
       // console.log(e.target);
     },
     // 歌曲计时函数
@@ -419,6 +423,8 @@ export default {
       // currentLyric实现随着歌曲的播放，播放到响应的位置，是内部使用了一个计算器
       // currentLyric每次currentSong改变的时候，我们都会去重新new一个新的Lyricpase出来的对象，但是我们并没有做一个之前的清理操作，也就是之前的Lyricpase还会有一个计算器存在
       // 详见视频7-24   1分零5秒处，所以会造成歌词来回闪动的bug，所以在切currentSong之前，重新去this.getLyric之前，我们要把当前的currentLyric给stop掉
+
+      // 这个getLyric（）方法，是因为vuex里面的currentSong是Song new出来的，Song里面有这个方法，所以this.currentSong可以继承这个方法
       this.currentSong
         .getLyric()
         .then(lyric => {
@@ -665,7 +671,7 @@ export default {
       // songReady就永远不会设为true，如果songReady不为true的话，那我们就切换不了了
       // 所以这个时候，调用play这个方法，让他延迟的时间更长一点，所以我们在这里用setTimeout
       // 这样就可以解决了我们在手机浏览器去使用他从后台切到前台的时候，保证js会正常播放
-      
+
       // 歌曲加载完毕后清除这个定时器，如果没有加载成功，这个定时器就不会被清除
       this.timer = setTimeout(() => {
         this.songReady = true;
