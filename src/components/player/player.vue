@@ -247,9 +247,9 @@ export default {
     _getPosAndScale() {
       // （小）下图标的宽度
       const targetWidth = 40;
-      // 离左边40像素
+      // 小图标中心点离左边40像素
       const paddingLeft = 40;
-      // 底部30像素
+      // 小图标中心点底部30像素
       const paddingBottom = 30;
       // 大图片距离头部80像素
       const paddingTop = 80;
@@ -261,7 +261,7 @@ export default {
       const x = -(window.innerWidth / 2 - paddingLeft);
       // 初始y坐标
       const y = window.innerHeight - paddingTop - width / 2 - paddingBottom;
-
+        
       return {
         x,
         y,
@@ -351,7 +351,7 @@ export default {
       // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true;
       this.canLyricPlay = true;
-      console.log(this.currentSong);
+      // console.log(this.currentSong);
       // 播放历史，写入vuex中
       this.savePlayHistory(this.currentSong);
       // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
@@ -376,6 +376,7 @@ export default {
     updateTime(e) {
       // e.target.currentTime; 当前播放的时间，currentTime是一个可读写的属性
       this.currentTime = e.target.currentTime;
+      
       // console.log(e.target);
     },
     // 歌曲计时函数
@@ -413,6 +414,7 @@ export default {
         this.currentLyric.seek(this.currentTime * 1000);
       }
     },
+    // 获取歌词
     getLyric() {
       // currentLyric实现随着歌曲的播放，播放到响应的位置，是内部使用了一个计算器
       // currentLyric每次currentSong改变的时候，我们都会去重新new一个新的Lyricpase出来的对象，但是我们并没有做一个之前的清理操作，也就是之前的Lyricpase还会有一个计算器存在
@@ -426,7 +428,7 @@ export default {
           // this.handleLyric这个回调函数就是当我们歌词每一行发生改变的时候就去回调一下
           this.currentLyric = new Lyric(lyric, this.handleLyric);
           this.isPureMusic = !this.currentLyric.lines.length;
-          console.log(this.currentLyric);
+          // console.log(this.currentLyric);
 
           if (this.isPureMusic) {
             this.pureMusicLyric = this.currentLyric.lrc
@@ -638,7 +640,9 @@ export default {
       if (!newSong.id || !newSong.url || newSong.id === oldSong.id) {
         return;
       }
+      // 播放按钮是否高亮显示
       this.songReady = false;
+      // 歌曲是否加载完毕
       this.canLyricPlay = false;
       if (this.currentLyric) {
         this.currentLyric.stop();
@@ -650,7 +654,7 @@ export default {
       }
       this.$nextTick(() => {
         this.$refs.audio.src = newSong.url;
-        console.log(newSong.url);
+        // console.log(newSong.url);
         this.$refs.audio.play();
       });
       // 若歌曲 5s 未播放，则认为超时，修改状态确保可以切换歌曲。
@@ -661,6 +665,8 @@ export default {
       // songReady就永远不会设为true，如果songReady不为true的话，那我们就切换不了了
       // 所以这个时候，调用play这个方法，让他延迟的时间更长一点，所以我们在这里用setTimeout
       // 这样就可以解决了我们在手机浏览器去使用他从后台切到前台的时候，保证js会正常播放
+      
+      // 歌曲加载完毕后清除这个定时器，如果没有加载成功，这个定时器就不会被清除
       this.timer = setTimeout(() => {
         this.songReady = true;
       }, 5000);

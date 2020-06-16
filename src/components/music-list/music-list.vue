@@ -96,6 +96,7 @@ export default {
     },
     // song-list子组件传过来的值
     // 子组件行为和本身相关，子组件并不关心父组件使用了你多少参数，子组件只负责把参数给你就行了
+    // 点击列表中的某一项给vuex传入列表和点击的下标，在vuex里面计算出当前需要播放的歌曲
     selectItem(item, i) {
       this.selectPlay({
         list: this.songs,
