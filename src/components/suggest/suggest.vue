@@ -106,6 +106,7 @@ export default {
     },
     // 监听scroll的滚动事件，并向外派发一个事件
     listScroll() {
+      // 当列表开始滚动的时候,给搜索框设置blur属性,使之失去焦点
       this.$emit('listScroll')
     },
     selectItem(item) {
@@ -141,6 +142,8 @@ export default {
       ) {
         this.hasMore = false;
       } else {
+        // BS 中判断是否可以垂直方向滚动
+        // 判断是不是可以滚动了，可以滚动的话下拉再次发起请求
         if (!this.$refs.suggest.scroll.hasVerticalScroll) {
           this.searchMore();
         }

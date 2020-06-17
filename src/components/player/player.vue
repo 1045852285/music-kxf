@@ -355,7 +355,7 @@ export default {
       // 监听 playing 这个事件可以确保慢网速或者快速切换歌曲导致的 DOM Exception
       this.songReady = true;
       this.canLyricPlay = true;
-      // console.log(this.currentSong);
+      console.log(this.currentSong);
       // 播放历史，写入vuex中
       this.savePlayHistory(this.currentSong);
       // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
