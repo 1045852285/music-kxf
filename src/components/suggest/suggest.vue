@@ -52,7 +52,7 @@ export default {
       // 开启下拉加载
       pullup: true,
       // 判断list有没有被加载完
-      hasMore: true,
+      hasMore: false,
       // 开启滚动后给input添加blue事件，取消input的焦点，作用，优化了在手机上滚动的时候取消input的焦点使手机能自己收起键盘
       beforeScroll:true
     };
@@ -109,6 +109,7 @@ export default {
       this.$emit('listScroll')
     },
     selectItem(item) {
+      // 点击歌手,跳转到歌手页面
       if (item.type === TYPE_SINGER) {
         const singer = new Singer({
           id: item.singermid,
@@ -119,6 +120,7 @@ export default {
         });
         this.setSinger(singer)
       } else {
+        // 点击歌曲,跳转到播放内核
         this.insertSong(item)
       }
 
@@ -144,8 +146,10 @@ export default {
         }
       }
     },
+    // 对数据进行处理，处理成我们需要的格式
     _getResult(data) {
       let ret = [];
+      // 判断搜索里面有没有歌手，有的话就把歌手数据单独拿出来
       if (data.zhida && data.zhida.singerid && this.page === 1) {
         ret.push({
           ...data.zhida,
@@ -161,6 +165,7 @@ export default {
         }
       );
     },
+    // 把数据进行实例化处理  new Song
     _normalizeSongs(list) {
       let ret = [];
       list.forEach(musicData => {
